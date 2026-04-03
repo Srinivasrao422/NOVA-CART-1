@@ -4,15 +4,13 @@ const BASE_URL =
 
 const AUTH_EVENT = "nova-cart:auth";
 
-/* ========================
-   TOKEN HANDLING
-========================= */
+/* TOKEN */
 
 function getToken() {
   return localStorage.getItem("nova_cart_token");
 }
 
-export function setToken(token: string | null) {
+export function setToken(token) {
   if (!token) localStorage.removeItem("nova_cart_token");
   else localStorage.setItem("nova_cart_token", token);
 }
@@ -21,11 +19,9 @@ export function getApiBase() {
   return BASE_URL;
 }
 
-/* =========================
-   HELPERS
-========================= */
+/* HELPERS */
 
-async function parseJson(res: Response) {
+async function parseJson(res) {
   const text = await res.text();
   if (!text) return null;
   try {
@@ -35,23 +31,18 @@ async function parseJson(res: Response) {
   }
 }
 
-function emitAuthEvent(detail: any) {
+function emitAuthEvent(detail) {
   try {
     window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail }));
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
-/* =========================
-   CORE API REQUEST
-========================= */
+/* CORE */
 
 export async function apiRequest(
-  path: string,
-  { method = "GET", body, auth = true, headers }: any = {}
+  path,
+  { method = "GET", body, auth = true, headers } = {}
 ) {
-  // ✅ IMPORTANT FIX: ensure no double slashes or /api/api
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${BASE_URL}${cleanPath}`;
 
@@ -74,8 +65,8 @@ export async function apiRequest(
       emitAuthEvent({ type: "unauthorized" });
     }
 
-    const msg = data?.message || res.statusText || "Request failed";
-    const err: any = new Error(msg);
+    const msg = (data && data.message) || res.statusText || "Request failed";
+    const err = new Error(msg);
     err.status = res.status;
     err.data = data;
     throw err;
@@ -84,91 +75,100 @@ export async function apiRequest(
   return data;
 }
 
-export function onAuthEvent(handler: any) {
-  const listener = (e: any) => handler(e?.detail);
+export function onAuthEvent(handler) {
+  const listener = (e) => handler(e && e.detail);
   window.addEventListener(AUTH_EVENT, listener);
   return () => window.removeEventListener(AUTH_EVENT, listener);
 }
 
-/* =========================
-   AUTH API
-========================= */
+/* AUTH */
 
 export const authApi = {
-  register: (payload: any) =>
-    apiRequest("/api/auth/register", { method: "POST", body: payload, auth: false }),
+  register: (payload) =>
+    apiRequest("/api/auth/register", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    }),
 
-  login: (payload: any) =>
-    apiRequest("/api/auth/login", { method: "POST", body: payload, auth: false }),
+  login: (payload) =>
+    apiRequest("/api/auth/login", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    }),
 
-  google: (payload: any) =>
-    apiRequest("/api/auth/google", { method: "POST", body: payload, auth: false }),
+  google: (payload) =>
+    apiRequest("/api/auth/google", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    }),
 };
 
-/* =========================
-   PRODUCT API
-========================= */
+/* PRODUCTS */
 
 export const productApi = {
-  list: (params?: any) => {
+  list: (params) => {
     const qs = params ? new URLSearchParams(params).toString() : "";
-    return apiRequest(qs ? `/api/products?${qs}` : "/api/products", { auth: false });
+    return apiRequest(
+      qs ? `/api/products?${qs}` : "/api/products",
+      { auth: false }
+    );
   },
 
-  get: (id: string) =>
-    apiRequest(`/api/products/${id}`, { auth: false }),
+  get: (id) => apiRequest(`/api/products/${id}`, { auth: false }),
 
-  create: (payload: any) =>
-    apiRequest("/api/products", { method: "POST", body: payload, auth: true }),
+  create: (payload) =>
+    apiRequest("/api/products", {
+      method: "POST",
+      body: payload,
+      auth: true,
+    }),
 };
 
-/* =========================
-   CART API
-========================= */
+/* CART */
 
 export const cartApi = {
-  getByUserId: (userId: string) =>
-    apiRequest(`/api/cart/${userId}`),
+  getByUserId: (userId) => apiRequest(`/api/cart/${userId}`),
 
-  add: ({ productId, quantity }: any) =>
+  add: ({ productId, quantity }) =>
     apiRequest("/api/cart/add", {
       method: "POST",
       body: { productId, quantity },
     }),
 
-  update: ({ productId, quantity }: any) =>
+  update: ({ productId, quantity }) =>
     apiRequest("/api/cart/update", {
       method: "PUT",
       body: { productId, quantity },
     }),
 
-  remove: (productId: string) =>
+  remove: (productId) =>
     apiRequest(`/api/cart/remove/${productId}`, {
       method: "DELETE",
     }),
 
-  applyCoupon: (couponCode: string) =>
+  applyCoupon: (couponCode) =>
     apiRequest("/api/cart/apply-coupon", {
       method: "POST",
       body: { couponCode },
     }),
 };
 
-/* =========================
-   ORDER API
-========================= */
+/* ORDERS */
 
 export const orderApi = {
-  createFromCart: ({ paymentMethod, address, upiId, simulateFailure }: any) =>
+  createFromCart: ({ paymentMethod, address, upiId, simulateFailure }) =>
     apiRequest("/api/orders", {
       method: "POST",
       body: { paymentMethod, address, upiId, simulateFailure },
     }),
 
-  listByUserId: (userId: string) =>
+  listByUserId: (userId) =>
     apiRequest(`/api/orders/${userId}`),
 
-  updateStatus: ({ orderId, status }: any) =>
+  updateStatus: ({ orderId, status }) =>
     apiRequest("/api/orders/status", {
       method: "PUT",
       body: { orderId, status },
