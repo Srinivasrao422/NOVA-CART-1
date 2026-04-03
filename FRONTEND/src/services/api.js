@@ -1,4 +1,4 @@
-const BASE_URL = "https://nova-cart-1-tn1h.onrender.com/api";
+const BASE_URL = "https://nova-cart-1-tn1h.onrender.com";
 const API_BASE = import.meta.env.VITE_API_URL || BASE_URL;
 const AUTH_EVENT = "nova-cart:auth";
 
