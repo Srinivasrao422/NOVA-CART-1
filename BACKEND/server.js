@@ -23,14 +23,17 @@ const PORT = Number(process.env.PORT || 5000);
 ========================= */
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://nova-cart-1-b5sw-axgqvk089.vercel.app"
+  "http://localhost:5173"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")   // ✅ THIS LINE FIXES EVERYTHING
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS not allowed"));
