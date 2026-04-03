@@ -4,7 +4,7 @@ const BASE_URL =
 
 const AUTH_EVENT = "nova-cart:auth";
 
-/* =========================
+/* ========================
    TOKEN HANDLING
 ========================= */
 
